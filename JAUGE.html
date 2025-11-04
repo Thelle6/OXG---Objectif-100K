@@ -5,138 +5,148 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>OXYGEAR — Objectif 100K</title>
 <style>
-    body {
-        font-family: Arial, sans-serif;
-        text-align: center;
-        background: #f4f4f4;
-        margin: 0;
-        padding: 20px;
-    }
-    h1 {
-        color: #333;
-    }
-    #thermometer-container {
-        width: 80px;
-        height: 400px;
-        margin: 20px auto;
-        border: 2px solid #333;
-        border-top-left-radius: 40px;
-        border-top-right-radius: 40px;
-        border-bottom-left-radius: 0;
-        border-bottom-right-radius: 0;
-        background: #eee;
-        position: relative;
-        overflow: visible;
-    }
-    #thermometer-fill {
-        width: 100%;
-        position: absolute;
-        bottom: 0;
-        height: 0;
-        background: red;
-        border-top-left-radius: 40px;
-        border-top-right-radius: 40px;
-        border-bottom-left-radius: 0;
-        border-bottom-right-radius: 0;
-        transition: height 1s ease-out, background 0.5s;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: #fff;
-        font-weight: bold;
-    }
-    #amount-label {
-        position: absolute;
-        left: 100%;
-        transform: translateX(10px);
-        color: #333;
-        font-weight: bold;
-        white-space: nowrap;
-    }
-    #controls {
-        margin-top: 30px;
-    }
-    input, button {
-        padding: 10px;
-        font-size: 16px;
-        margin: 5px;
-    }
-    button {
-        cursor: pointer;
-    }
-    #remaining {
-        margin-top: 15px;
-        font-size: 18px;
-        color: #555;
-    }
+body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    background: #f4f4f4;
+    margin: 0;
+    padding: 20px;
+}
+h1 { color: #333; }
+#thermometer-container {
+    width: 80px;
+    height: 400px;
+    margin: 20px auto;
+    border: 2px solid #333;
+    border-top-left-radius: 40px;
+    border-top-right-radius: 40px;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    background: #eee;
+    position: relative;
+    overflow: visible;
+}
+#thermometer-fill {
+    width: 100%;
+    position: absolute;
+    bottom: 0;
+    height: 0;
+    background: red;
+    border-top-left-radius: 40px;
+    border-top-right-radius: 40px;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    transition: height 1s ease-out, background 0.5s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-weight: bold;
+}
+#amount-label {
+    position: absolute;
+    left: 100%;
+    transform: translateX(10px);
+    color: #333;
+    font-weight: bold;
+    white-space: nowrap;
+}
+#controls { margin-top: 30px; }
+input, button { padding: 10px; font-size: 16px; margin: 5px; }
+button { cursor: pointer; }
+#remaining { margin-top: 15px; font-size: 18px; color: #555; }
 </style>
 </head>
 <body>
-    <h1>OXYGEAR — OBJECTIF 100K</h1>
-    <div id="thermometer-container">
-        <div id="thermometer-fill"><span id="percentage"></span></div>
-        <div id="amount-label"></div>
-    </div>
+<h1>OXYGEAR — OBJECTIF 100K</h1>
+<div id="thermometer-container">
+    <div id="thermometer-fill"><span id="percentage"></span></div>
+    <div id="amount-label"></div>
+</div>
 
-    <div id="controls">
-        <input type="number" id="amount" placeholder="Montant à ajouter (€)" />
-        <button onclick="addAmount()">Ajouter</button>
-        <button onclick="undoAmount()">Annuler</button>
-    </div>
+<div id="controls">
+    <input type="number" id="amount" placeholder="Montant à ajouter (€)" />
+    <button onclick="addAmount()">Ajouter</button>
+    <button onclick="undoAmount()">Annuler</button>
+</div>
 
-    <div id="remaining"></div>
+<div id="remaining"></div>
 
 <script>
-    const goal = 100000;
-    let current = 0;
-    let history = []; // garde une trace des montants ajoutés
+const WEB_APP_URL = "https://script.google.com/a/macros/oxygear.com/s/AKfycbxEUwCrR_HanA8HVaqayKKFw4CEzs-EUtp8d2YGg4sUCx39GorRF1bHatGhRHrbMeUK/exec"; // Remplace par ton URL Web App
+const goal = 100000;
+let current = 0;
+let history = []; // pour bouton Annuler
 
-    function updateThermometer() {
-        const percentage = Math.min((current / goal) * 100, 100);
-        const fill = document.getElementById('thermometer-fill');
-        const percentText = document.getElementById('percentage');
-        const label = document.getElementById('amount-label');
-        const remainingText = document.getElementById('remaining');
+// Met à jour la jauge
+function updateThermometer() {
+    const percentage = Math.min((current / goal) * 100, 100);
+    const fill = document.getElementById('thermometer-fill');
+    const percentText = document.getElementById('percentage');
+    const label = document.getElementById('amount-label');
+    const remainingText = document.getElementById('remaining');
 
-        fill.style.height = percentage + '%';
-        percentText.textContent = Math.round(percentage) + '%';
-        label.textContent = current.toLocaleString('fr-FR') + ' €';
-        label.style.bottom = percentage + '%';
+    fill.style.height = percentage + '%';
+    percentText.textContent = Math.round(percentage) + '%';
+    label.textContent = current.toLocaleString('fr-FR') + ' €';
+    label.style.bottom = percentage + '%';
 
-        // Couleur dynamique
-        if (percentage < 50) fill.style.background = 'red';
-        else if (percentage < 80) fill.style.background = 'orange';
-        else fill.style.background = 'green';
+    if (percentage < 50) fill.style.background = 'red';
+    else if (percentage < 80) fill.style.background = 'orange';
+    else fill.style.background = 'green';
 
-        // Reste avant l’objectif
-        const remaining = Math.max(goal - current, 0);
-        remainingText.textContent = remaining > 0
-            ? `Il reste : ${remaining.toLocaleString('fr-FR')} € avant d’atteindre l’objectif !`
-            : `🎉 Objectif atteint ! Félicitations ! 🎉`;
+    const remaining = Math.max(goal - current, 0);
+    remainingText.textContent = remaining > 0
+        ? `Il reste : ${remaining.toLocaleString('fr-FR')} € avant d’atteindre l’objectif !`
+        : `🎉 Objectif atteint ! Félicitations ! 🎉`;
+}
+
+// Ajouter un montant
+function addAmount() {
+    const amountInput = document.getElementById('amount');
+    const amount = parseFloat(amountInput.value);
+    if (!isNaN(amount) && amount > 0) {
+        fetch(WEB_APP_URL, {
+            method: 'POST',
+            body: JSON.stringify({ amount: amount })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === "ok") {
+                history.push(amount); // sauvegarde local pour annuler
+                amountInput.value = '';
+                fetchTotal();
+            } else {
+                alert(data.message);
+            }
+        });
     }
+}
 
-    function addAmount() {
-        const amount = parseFloat(document.getElementById('amount').value);
-        if (!isNaN(amount) && amount > 0) {
-            history.push(amount);
-            current += amount;
-            document.getElementById('amount').value = '';
-            updateThermometer();
-        }
+// Annuler le dernier montant ajouté (local)
+function undoAmount() {
+    if (history.length > 0) {
+        const last = history.pop();
+        current -= last;
+        if (current < 0) current = 0;
+        updateThermometer();
+    } else {
+        alert("Aucun montant à annuler !");
     }
+}
 
-    function undoAmount() {
-        if (history.length > 0) {
-            const last = history.pop();
-            current -= last;
-            if (current < 0) current = 0;
-            updateThermometer();
-        } else {
-            alert("Aucun montant à annuler !");
-        }
-    }
+// Récupérer le total actuel depuis le Google Sheet
+function fetchTotal() {
+    fetch(WEB_APP_URL)
+    .then(res => res.json())
+    .then(data => {
+        current = parseFloat(data.total);
+        updateThermometer();
+    });
+}
 
-    updateThermometer();
+// Initialisation
+fetchTotal();
 </script>
 </body>
 </html>
